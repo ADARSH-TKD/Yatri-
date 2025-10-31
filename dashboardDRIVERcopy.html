@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Uber</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+    body {
+      min-height: 100vh;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      margin: 0; color: #111;
+      background: #f2faff url('map2.png') center/cover fixed no-repeat;
+      transition: background 0.4s;
+    }
+
+        /* Header */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #000;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .nav-links a:hover {
+            color: #666;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #000;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+    .container {
+      max-width: 1270px; margin: 0 auto; display: flex;
+      border-radius: 38px; overflow: hidden; box-shadow: 0 8px 46px #acc6d038;
+      background: rgba(255,255,255,0.89);
+      margin-bottom: 35px;
+    }
+    aside {
+      width: 305px; background: var(--sidebar-bg); color: #fff; padding: 34px; border-radius: 34px 0 0 34px; box-shadow: 7px 0 20px #22344424;
+      display: flex; flex-direction: column; align-items: center;
+    }
+    .profile {
+      text-align: center; margin-bottom: 24px;
+    }
+    .profile img {
+      width: 80px; height: 80px; border-radius: 18px; object-fit: cover; border: 4px solid #fff; box-shadow: 0 4px 24px #17916c44;
+    }
+    .profile .driver-name {font-size: 1.15rem; font-weight: 700; color: #fff;}
+    .wallet {
+      background: rgba(255,255,255,0.16); border-radius: 13px; padding: 9px 21px; margin-bottom: 18px; color: #fff;
+      font-weight: 500; box-shadow: 0 2px 10px #17916c18; font-size: 16px; display: inline-block;
+    }
+    .stats {margin-bottom: 32px;}
+    .stats div {margin-bottom: 16px;}
+    .stats .label {color: #aac2da;}
+    .stats .value {font-size: 23px; font-weight: 600;}
+    .sidebar-nav {margin-top: 33px; padding: 0; list-style: none;}
+    .sidebar-nav a {display: block; padding: 15px 2px 15px 18px; color: #cde7f3; text-decoration: none; border-radius: 9px; font-size: 17px;}
+    .sidebar-nav a.active, .sidebar-nav a:hover {background: #212c4a;}
+    .notification-badge {background: #ed2958; color: #fff; border-radius: 18px; padding: 2px 11px; font-size: 14px; margin-left: 6px;}
+    .theme-switch {margin-top: 32px;}
+    .theme-switch label {cursor: pointer; font-size: 15px; color: #cde7f3;}
+    main {flex: 2; padding: 58px 48px 44px 48px; position: relative;}
+    .dashboard-header {font-size: 2rem; margin-bottom: 32px; display: flex; align-items: center; gap: 23px;}
+    .dashboard-header img {width: 47px; height: 47px; border-radius: 50%; border: 3px solid #fff;}
+    .alert {background: #fff3cd; color: #856404; margin-bottom: 24px; padding: 17px; border-radius: 10px; display: flex; align-items: center; gap: 22px; font-size: 1.08rem;}
+    .btn {padding: 14px 29px; font-size: 16px; border-radius: 9px; border: none; font-weight: 600; cursor: pointer; transition: background 0.13s;}
+    .btn-primary {background: #17916c; color: #fff;}
+    .btn-danger {background: #ed2958; color: #fff;}
+    .btn-secondary {background: #eaf2fa; color: #031638;}
+    .btn-outline {background: transparent; color: #17916c; border: 2px solid #17916c;}
+    .btn-outline:hover {background: #17916c; color: #fff;}
+    .card {background: #fff; padding: 28px; border-radius: 22px; margin-bottom: 28px; box-shadow: 0 6px 30px #b3c3e026; display: flex; align-items: center; transition: box-shadow 0.15s, transform 0.15s; gap: 24px;}
+    .card:hover {box-shadow: 0 14px 54px #bce6ff68; transform: translateY(-1px);}
+    .card .thumb {flex-shrink: 0;}
+    .card .thumb img {width: 70px; height: 70px; border-radius: 15px; object-fit: cover; border: 2px solid #e5f2fb;}
+    .ride-details {margin-bottom: 10px; font-size: 1rem;}
+    .ride-info {display: flex; flex-direction: column; gap: 8px;}
+    .fare {color: #129658; font-size: 2rem; font-weight: bold;}
+    .actions {margin-top: 15px; display: flex; gap: 13px;}
+    /* Dash Cards */
+    .dash-grid {display: grid; grid-template-columns: repeat(auto-fit, minmax(210px,1fr)); gap: 14px; margin-bottom: 18px;}
+    .dash-card {background: #0f1c2e; color: #e8f0ff; border-radius: 18px; padding: 18px; box-shadow: 0 8px 24px #07233c2a;}
+    .dash-card.light {background: #ffffff; color: #0c1b2e;}
+    .dash-title {font-size: 16px; opacity: 0.84; margin-bottom: 7px;}
+    .dash-value {font-size: 27px; font-weight: 800; letter-spacing: 0.5px;}
+    .call-btn {width: 42px; height: 42px; border: none; border-radius: 50%; background: #ed2958; color: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px #ed29584a; cursor: pointer;}
+    .mini-map {width: 100%; height: 120px; border-radius: 12px; object-fit: cover; box-shadow: 0 3px 12px #062b4a2a;}
+    .quick-grid {display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px;}
+    .quick-item {background: #12263b; color: #e7f3ff; border-radius: 14px; padding: 15px 10px; text-align: center; box-shadow: 0 6px 18px #0a25412a;}
+    .quick-item img {width: 23px; height: 23px; display: block; margin: 0 auto 7px;}
+    .recent-trips {margin-top: 25px;}
+    .recent-trips h3 {color: #17916c; font-size: 1.23rem; margin-bottom: 11px;}
+    .recent-list {list-style: none; margin: 0; padding: 0;}
+    .recent-list li {padding: 13px 0; border-bottom: 1px solid #eee; color: #123;}
+    .recent-list li:last-child {border-bottom: none;}
+    .recent-list .trip-type {color: #ed2958; font-weight: 600; margin-right: 6px;}
+    /* Map, Hero Section & more styles ... */
+    .hero-section {position: relative; height: 54vh; border-radius: 22px; overflow: hidden; box-shadow: 0 7px 24px #17916c1e; margin: 22px 0;}
+    #map {position: absolute; top: 0; left: 0; width: 100%; height: 100%;}
+    .hero-overlay {position: absolute; inset: 0; background: rgba(0,0,0,0.26);}
+    .hero-content {position: absolute; top: 53%; left: 51%; transform: translate(-50%,-50%); width: min(95%,510px); z-index: 2;}
+    .ride-card-lite {background: #fff; padding: 23px; border-radius: 13px; box-shadow: 0 10px 44px rgba(0,0,0,0.20);}
+    /* ...responsive and additional component styles omitted for brevity... */
+    @media (max-width:930px) { aside{display:none;} .container{padding:0 3vw;} }
+    @media (max-width:800px) { main{padding:20px 2vw;} #map{height:300px;} }
+       
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .dashboard-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+            }
+
+            .booking-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .route-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav>
+            <div class="logo" onclick="window.location.href='index.html'">Yatri</div>
+            <ul class="nav-links">
+                <li><a onclick="window.location.href='index.html'">Home</a></li>
+                <li><a href="dashboardUSER.html">My Trips</a></li>
+                <li><a href="about1.html">About</a></li>
+                <li><a href="about.html">Help</a></li>
+            </ul>
+            <div class="user-profile">
+                <div class="user-avatar">JD</div>
+            </div>
+        </nav>
+    </header>
+
+   <!-- Dash Cards like Reference UI -->
+      <div class="dash-grid">
+        <div class="dash-card">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div class="dash-title">On Trip</div>
+              <div class="dash-value" id="onTripTimer">12:23</div>
+            </div>
+            <button class="call-btn" title="Call">☎</button>
+          </div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-title">Earnings</div>
+          <div class="dash-value" id="topEarnings">₹0</div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-title">Rating</div>
+          <div class="dash-value">4.9 <span style="color:#ffd166; font-size:20px;">★★★★★</span></div>
+        </div>
+        <div class="dash-card light">
+          <img class="mini-map" src="map2.png" alt="route preview"/>
+        </div>
+      </div>
+      <div class="dash-card" style="margin-bottom:22px;">
+        <div class="quick-grid">
+          <div class="quick-item"><img src="https://img.icons8.com/ios-filled/50/money.png"/>Earnings</div>
+          <div class="quick-item"><img src="https://img.icons8.com/ios-filled/50/clock.png"/>Trips</div>
+          <div class="quick-item"><img src="https://img.icons8.com/ios-filled/50/help.png"/>Help</div>
+          <div class="quick-item"><img src="https://img.icons8.com/ios-filled/50/settings.png"/>Settings</div>
+        </div>
+      </div>
+    <!-- Ride Requests and History Section -->
+    <div class="hero-section">
+      <div id="map"></div>
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <div class="ride-card-lite">
+          <div class="dashboard-header" style="margin-bottom:13px;">
+            <img src="https://randomuser.me/api/portraits/men/34.jpg"/>
+            <span>Available Ride Requests</span>
+          </div>
+          <div id="statusAlert" class="alert" style="margin-bottom:0;"><span>⚠️</span> <span>You're currently offline. Click "Go Online" to receive ride requests.</span></div>
+        </div>
+      </div>
+    </div>
+    <div id="requestsContainer"></div>
+    <section class="recent-trips">
+      <h3>Recent Trips</h3>
+      <ul class="recent-list" id="recentTrips">
+        <li><span class="trip-type">Sedan</span> IT Park → Airport (₹550)</li>
+        <li><span class="trip-type">Mini</span> Infocity → Baramunda (₹180)</li>
+      </ul>
+    </section>
+  </main>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// THEME TOGGLE FEATURE
+const themeToggle = document.getElementById('themeToggle');
+themeToggle.addEventListener('change', function() {
+  document.documentElement.classList.toggle('dark', this.checked);
+});
+
+// SIMULATED RIDE REQUESTS & USER DATA
+let isOnline = false;
+let rideRequests = [
+  {pickup: "IT Park, Sector 63", destination: "Airport Terminal", fare: "₹550", distance: "12 km", duration:"28 min", rideType:"Sedan", requestTime: new Date()},
+  {pickup: "Infocity Mall", destination: "Baramunda Bus Stand", fare: "₹180", distance: "7 km", duration:"18 min", rideType:"Mini", requestTime: new Date()},
+];
+let recentTrips = [
+  {type:"Sedan", from:"IT Park", to:"Airport", fare:"₹550"},
+  {type:"Mini", from:"Infocity", to:"Baramunda", fare:"₹180"}
+];
+let currentTrip = null;
+let driverLocation = {lat: 20.2961, lng:85.8245};
+let map, routeLayer, pickupMarker, driverMarker;
+
+// UPDATE RECENT TRIPS LIST
+function renderRecentTrips() {
+  const ul = document.getElementById('recentTrips');
+  ul.innerHTML = recentTrips.map(trip => `<li><span class="trip-type">${trip.type}</span> ${trip.from} → ${trip.to} (${trip.fare})</li>`).join("");
+}
+
+// RENDER RIDE REQUEST CARDS
+function renderRequests() {
+  document.getElementById('notifBadge').textContent = rideRequests.length;
+  const container = document.getElementById('requestsContainer');
+  if (!isOnline || rideRequests.length === 0) {
+      container.innerHTML = `<div class="card empty-state">
+        <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?fit=crop&w=300&q=80" style="width:100px;margin-bottom:17px;border-radius:14px;"/>
+        <h3 style="color:#396bbd;font-size:21px;">No requests available</h3>
+        <p>Go online to start receiving ride requests and boost your earnings.</p>
+        <div class="feature-row">
+          <span class="feature-badge"><img src="https://img.icons8.com/ios-filled/50/shield.png"/>Safety</span>
+          <span class="feature-badge"><img src="https://img.icons8.com/ios-filled/50/online-support.png"/>24/7 Support</span>
+          <span class="feature-badge"><img src="https://img.icons8.com/ios-filled/50/money-bag.png"/>Fast Payouts</span>
+        </div>
+      </div>`;
+    return;
+  }
+  let html = '';
+  rideRequests.forEach((req, i) => {
+    html += `<div class="card">
+      <div class="thumb"><img src="https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?fit=crop&w=400&q=80"/></div>
+      <div style="flex:1;">
+        <div class="ride-details"><b>${req.rideType}</b> <span style="float:right;color:#129658">${req.fare}</span></div>
+        <div class="ride-info">
+          <div>🟢 Pickup: <b>${req.pickup}</b></div>
+          <div>⏹ Destination: <b>${req.destination}</b></div>
+          <div>Distance: ${req.distance} &middot; Duration: ${req.duration}</div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary" onclick="acceptRequest(${i})">Confirm Booking</button>
+          <button class="btn btn-danger" onclick="rejectRequest(${i})">Reject</button>
+        </div>
+      </div>
+    </div>`;
+  });
+  container.innerHTML = html;
+}
+renderRequests();
+renderRecentTrips();
+
+// Stats update
+function updateStatsDisplay() {
+  document.getElementById('todayEarnings').textContent = "₹{0}";
+  document.getElementById('totalTrips').textContent = "0";
+  document.getElementById('acceptanceRate').textContent = "100%";
+  document.getElementById('topEarnings').textContent = "₹{0}";
+}
+updateStatsDisplay();
+
+function acceptRequest(index) {
+  const req = rideRequests[index];
+  currentTrip = req;
+  recentTrips.unshift({type: req.rideType, from: req.pickup, to: req.destination, fare: req.fare});
+  rideRequests.splice(index, 1);
+  renderRequests();
+  renderRecentTrips();
+  alert("Booking confirmed! Ready to start navigation.");
+}
+function rejectRequest(index) {
+  rideRequests.splice(index, 1);
+  renderRequests();
+}
+
+// THEME SWITCHER (dark/light mode)
+document.getElementById('themeToggle').addEventListener('change', function() {
+  document.body.classList.toggle('dark', this.checked);
+});
+
+// ONLINE/OFFLINE BUTTON LOGIC
+document.getElementById('toggleOnline').onclick = function() {
+  isOnline = !isOnline;
+  this.className = isOnline ? "btn btn-primary" : "btn btn-danger";
+  this.textContent = isOnline ? "Go Offline" : "Go Online";
+  document.getElementById('statusAlert').textContent = isOnline
+    ? "You're online! Ready to receive ride requests." : "You're currently offline. Click 'Go Online' to receive ride requests.";
+  renderRequests();
+};
+
+// (Map logic omitted for brevity, can be copied from your previous code setup)
+</script>
+        
+    <!-- AI BOT -->
+    <script src='https://www.noupe.com/embed/019a05589bc779c6a7cd8779cf85de5f29d5.js'></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Map Variables
+        let map;
+        let routeLayer;
+        let markers = [];
+
+        // Initialize Map
+        function initMap() {
+            map = L.map('map').setView([19.0760, 72.8777], 12); // Mumbai center
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+            
+            console.log('✅ Map initialized successfully!');
+        }
+
+        // Get Coordinates
+        async function getCoordinates(location) {
+            const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}`;
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            if (data.length > 0) {
+                return {
+                    lat: parseFloat(data[0].lat),
+                    lon: parseFloat(data[0].lon),
+                    display_name: data[0].display_name
+                };
+            }
+            return null;
+        }
+
+        // Get Route
+        async function getRoute(start, end, mode = 'driving') {
+            const url = `https://router.project-osrm.org/route/v1/${mode}/${start.lon},${start.lat};${end.lon},${end.lat}?overview=full&geometries=geojson&steps=true`;
+            const response = await fetch(url);
+            return await response.json();
+        }
+
+        // Calculate Fare (simplified calculation)
+        function calculateFare(distanceKm) {
+            const baseUberX = 2.50;
+            const perKmUberX = 1.50;
+            
+            const fareUberX = baseUberX + (distanceKm * perKmUberX);
+            const fareComfort = fareUberX * 1.4;
+            const fareXL = fareUberX * 1.8;
+            
+            return {
+                uberx: fareUberX.toFixed(2),
+                comfort: fareComfort.toFixed(2),
+                xl: fareXL.toFixed(2)
+            };
+        }
+
+        // Calculate Route
+        async function calculateRoute() {
+            const pickup = document.getElementById('pickup').value.trim();
+            const destination = document.getElementById('destination').value.trim();
+            const mode = document.getElementById('travelMode').value;
+            
+            if (!pickup || !destination) {
+                alert('⚠️ Please enter both pickup and destination!');
+                return;
+            }
+            
+            const button = document.getElementById('getDirections');
+            button.textContent = '⏳ Calculating route...';
+            button.disabled = true;
+            
+            try {
+                console.log('Finding locations...');
+                const startCoords = await getCoordinates(pickup);
+                const endCoords = await getCoordinates(destination);
+                
+                if (!startCoords || !endCoords) {
+                    alert('❌ Could not find locations! Try being more specific.');
+                    button.textContent = 'Show Route & Get Price';
+                    button.disabled = false;
+                    return;
+                }
+                
+                console.log('Calculating route...');
+                const routeData = await getRoute(startCoords, endCoords, mode);
+                
+                if (routeData.code !== 'Ok') {
+                    alert('❌ Could not calculate route!');
+                    button.textContent = 'Show Route & Get Price';
+                    button.disabled = false;
+                    return;
+                }
+                
+                // Clear previous route
+                if (routeLayer) map.removeLayer(routeLayer);
+                markers.forEach(marker => map.removeLayer(marker));
+                markers = [];
+                
+                // Draw route
+                const coordinates = routeData.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
+                routeLayer = L.polyline(coordinates, {
+                    color: '#000',
+                    weight: 5,
+                    opacity: 0.7
+                }).addTo(map);
+                
+                // Add markers
+                const startIcon = L.divIcon({
+                    className: 'custom-marker',
+                    html: '<div style="background: #000; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">A</div>',
+                    iconSize: [30, 30]
+                });
+                
+                const endIcon = L.divIcon({
+                    className: 'custom-marker',
+                    html: '<div style="background: #1E9455; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">B</div>',
+                    iconSize: [30, 30]
+                });
+                
+                const startMarker = L.marker([startCoords.lat, startCoords.lon], {icon: startIcon})
+                    .addTo(map)
+                    .bindPopup(`<b>🚩 Pickup</b><br>${pickup}`);
+                
+                const endMarker = L.marker([endCoords.lat, endCoords.lon], {icon: endIcon})
+                    .addTo(map)
+                    .bindPopup(`<b>🏁 Destination</b><br>${destination}`);
+                
+                markers.push(startMarker, endMarker);
+                
+                // Fit map to route
+                map.fitBounds(routeLayer.getBounds(), { padding: [50, 50] });
+                
+                // Update route info
+                const route = routeData.routes[0];
+                const distanceKm = (route.distance / 1000).toFixed(1);
+                const durationMin = Math.round(route.duration / 60);
+                const hours = Math.floor(durationMin / 60);
+                const mins = durationMin % 60;
+                const durationText = hours > 0 ? `${hours}h ${mins}m` : `${mins} min`;
+                
+                document.getElementById('routeDistance').textContent = distanceKm + ' km';
+                document.getElementById('routeDuration').textContent = durationText;
+                
+                // Calculate fares based on selected travel mode
+                const selectedMode = document.getElementById('travelMode').value;
+                const ratePerKm = {
+                    'bike': 20,
+                    'auto': 53,
+                    'cab-economy': 73,
+                    'cab-premium': 94
+                };
+                const fare = (ratePerKm[selectedMode] * parseFloat(distanceKm)).toFixed(2);
+                document.getElementById('routeFare').textContent = '₹' + fare;
+                
+                // Show route info
+                document.getElementById('routeInfo').classList.add('active');
+                
+                button.textContent = 'Show Route & Get Price';
+                button.disabled = false;
+                
+                console.log('✅ Route calculated successfully!');
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ An error occurred: ' + error.message);
+                button.textContent = 'Show Route & Get Price';
+                button.disabled = false;
+            }
+        }
+
+        // Quick Destination
+        function quickDestination(destination) {
+            document.getElementById('destination').value = destination;
+            calculateRoute();
+        }
+
+        // Confirm Ride
+        function confirmRide() {
+            const pickup = document.getElementById('pickup').value;
+            const destination = document.getElementById('destination').value;
+            alert(`🎉 Ride Confirmed!\n\nFrom: ${pickup}\nTo: ${destination}\n\nYour driver will arrive in 5 minutes!`);
+        }
+
+        // Dashboard Panel Switching
+        function switchDashboard(panelName) {
+            const panels = document.querySelectorAll('.dashboard-panel');
+            const navLinks = document.querySelectorAll('.sidebar-nav a');
+            
+            panels.forEach(panel => panel.classList.remove('active'));
+            navLinks.forEach(link => link.classList.remove('active'));
+            
+            document.getElementById('dashboard-' + panelName).classList.add('active');
+            event.target.closest('a').classList.add('active');
+        }
+
+        // Initialize on load
+        window.addEventListener('load', initMap);
+        
+        // Event listeners
+        document.getElementById('getDirections').addEventListener('click', calculateRoute);
+        
+        document.getElementById('pickup').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') calculateRoute();
+        });
+        
+        document.getElementById('destination').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') calculateRoute();
+        });
+    </script>
+</body>
+</html>

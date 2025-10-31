@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YATRI Help & Support Form</title>
+   
+    <style>
+        /* --- General Styling to match the Uber-like UI --- */
+        #particles-js {
+            width: 100%;
+            height: 100%; 
+
+            position: relative;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-image: linear-gradient(rgba(0,0,0,0.7),rgba(0,0,0,0.7)), url("map.png");
+            color: #1c1c1c; /* Dark text */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            color: #fff;
+            width: 100%;
+}
+
+
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #000;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #000;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .nav-links a:hover {
+            color: #666;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-signin {
+            background: transparent;
+            color: #000;
+        }
+
+        .btn-signin:hover {
+            background: #f6f6f6;
+        }
+
+        .btn-signup {
+            background: #000;
+            color: #fff;
+        }
+
+        .btn-signup:hover {
+            background: #333;
+        }
+
+
+
+        /* --- Main Content Area & Form Container --- */
+        .content-container {
+            position: absolute;
+            top: 10%;
+            width: 90%;
+            max-width: 800px;
+            margin-top: 40px;
+            padding: 20px;
+            background-color: #ded9d9;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #1c1c1c;
+            font-size: 28px;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        /* --- Form Styling --- */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #545454;
+            font-size: 14px;
+        }
+
+        /* Styling for all input and textarea elements */
+        input[type="email"],
+        input[type="tel"],
+        input[type="text"],
+        input[type="file"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+            background-color: #f5f5f5;
+            color: #1c1c1c;
+            transition: border-color 0.3s;
+        }
+
+        input[type="email"]:focus,
+        input[type="tel"]:focus,
+        input[type="text"]:focus,
+        textarea:focus,
+        select:focus {
+            border-color: #000000;
+            outline: none;
+        }
+
+        /* Specific style for file input */
+        input[type="file"] {
+            padding: 8px 12px;
+            height: auto;
+        }
+        
+        /* Phone number group to handle the +91 prefix */
+        .phone-group {
+            display: flex;
+            align-items: center;
+        }
+        .country-code {
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-right: none;
+            border-radius: 4px 0 0 4px;
+            background-color: #e9e9e9;
+            font-size: 16px;
+            color: #1c1c1c;
+            font-weight: bold;
+        }
+        .phone-input {
+            flex-grow: 1;
+            border-radius: 0 4px 4px 0 !important;
+        }
+
+        /* Submit Button (Matching the black button in the screenshot) */
+        .submit-button {
+            width: 100%;
+            padding: 15px;
+            background-color: #000000; /* Black button */
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-transform: uppercase;
+        }
+
+        .submit-button:hover {
+            background-color: #1c1c1c;
+        }
+
+        /* Hidden class for conditional display */
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+     <!-- Header -->
+    <header>
+        <nav>
+            <div class="logo" onclick="navigateTo('home')">Yatri</div>
+            <ul class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="dashboardUSER.html">My Trips</a>
+                <a href="about.html" class="active">About</a>
+                <a href="about.html" class="active">Help</a>
+            </ul>
+            <div class="auth-buttons">
+                <button class="btn btn-signin" onclick="window.location.href='signin.html'">Sign in</button>
+                <button class="btn btn-signup" onclick="window.location.href='signupUSER.html'">Sign up</button>
+            </div>
+        </nav>
+    </header>
+    <div id = "particles-js">
+
+    </div>
+    
+
+    <div class="content-container">
+        <h1>Need Assistance?</h1>
+
+        <form action="https://sheetdb.io/api/v1/31b2qavgntqvu" method="POST" id="sheetdb-form" enctype="multipart/form-data">
+            
+            <div class="form-group">
+                <label>Role</label>
+                <div style="display: flex; gap: 20px;">
+                    <label for="role-rider" style="font-weight: normal; color: #1c1c1c;">
+                        <input type="radio" id="role-rider" name="data[user_role]" value="Rider" required>
+                        Rider
+                    </label>
+                    <label for="role-driver" style="font-weight: normal; color: #1c1c1c;">
+                        <input type="radio" id="role-driver" name="data[user_role]" value="Driver">
+                        Driver
+                    </label>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="data[email]" placeholder="example@email.com" required>
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Phone Number (Required for India)</label>
+                <div class="phone-group">
+                    <span class="country-code">+91</span>
+                    <input type="tel" id="phone" name="data[phone]" class="phone-input" placeholder="Enter 10-digit number" pattern="[0-9]{10}" maxlength="10" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="query-type">My Query is Related to...</label>
+                <select id="query-type" name="data[query_type]" required>
+                    <option value="" disabled selected>Select an option</option>
+                    <option value="website_guide">How the website works / Platform guide</option>
+                    <option value="booking_issue">Booking a ride or price query</option>
+                    <option value="account_settings">Account settings or profile issue</option>
+                    <option value="offers">Offer/Promo Code issue</option>
+                    <option value="other">Other/General Support</option>
+                </select>
+            </div>
+
+            <div class="form-group hidden" id="trip-id-group">
+                <label for="trip-id">Trip ID / Booking Reference (Optional)</label>
+                <input type="text" id="trip-id" name="data[trip_id]" placeholder="Enter the 10-digit Trip ID or reference number">
+            </div>
+
+            <div class="form-group">
+                <label for="attachment">Attach Screenshot or Document (Optional)</label>
+                <input type="file" id="attachment" name="data[attachment]" accept="image/*,.pdf">
+                <small style="display: block; margin-top: 5px; color: #888;">Max 5MB (PNG, JPEG, PDF accepted)</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="query">Detailed Query (What can we help you with?)</label>
+                <textarea id="query" name="data[query]" rows="6" placeholder="Example: I'm not sure how to use the 'Live Route Mapping Active' feature, or: I have a question about my Welcome Offer." required></textarea>
+            </div>
+
+            <button type="submit" class="submit-button">Submit Support Request</button>
+        </form>
+    </div>
+    <script src="particles.js"></script>
+    <script src="app.js"></script>
+    <script>
+        const queryTypeSelect = document.getElementById('query-type');
+        const tripIdGroup = document.getElementById('trip-id-group');
+
+        // Function to handle the conditional display of the Trip ID field
+        queryTypeSelect.addEventListener('change', function() {
+            if (this.value === 'booking_issue') {
+                tripIdGroup.classList.remove('hidden');
+            } else {
+                tripIdGroup.classList.add('hidden');
+            }
+        });
+          var form = document.getElementById('sheetdb-form');
+  form.addEventListener("submit", e => {
+    e.preventDefault();
+    fetch(form.action, {
+        method : "POST",
+        body: new FormData(document.getElementById("sheetdb-form")),
+    }).then(
+        response => response.json()
+    ).then((html) => {
+      // you can put any JS code here
+      alert('success')
+    });
+  });
+    </script>
+</body>
+</html>

@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Uber</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background-color: #f6f6f6;
+            color: #000;
+        }
+
+        /* Header */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #000;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .nav-links a:hover {
+            color: #666;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #000;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        /* Dashboard Container */
+        .dashboard-container {
+            display: flex;
+            min-height: calc(100vh - 80px);
+        }
+
+        .sidebar {
+            width: 280px;
+            background: #000;
+            color: white;
+            padding: 30px;
+        }
+
+        .sidebar h3 {
+            font-size: 24px;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #333;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+        }
+
+        .sidebar-nav li {
+            margin-bottom: 10px;
+        }
+
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            color: #999;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .sidebar-nav a:hover,
+        .sidebar-nav a.active {
+            background: #333;
+            color: white;
+        }
+
+        .sidebar-nav svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .dashboard-content {
+            flex: 1;
+            padding: 40px;
+        }
+
+        .dashboard-panel {
+            display: none;
+        }
+
+        .dashboard-panel.active {
+            display: block;
+        }
+
+        .dashboard-header {
+            font-size: 32px;
+            margin-bottom: 30px;
+        }
+
+        .booking-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+        }
+
+        .booking-form {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .booking-form h4 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .booking-form input, .booking-form select {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .booking-form input:focus, .booking-form select:focus {
+            outline: none;
+            border-color: #000;
+            box-shadow: 0 0 0 2px rgba(0,0,0,0.1);
+        }
+
+        .btn-ride {
+            width: 100%;
+            padding: 15px;
+            background: #000;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+
+        .btn-ride:hover {
+            background: #333;
+        }
+
+        .btn-ride:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .map-container {
+            background: #e0e0e0;
+            border-radius: 12px;
+            height: 500px;
+            overflow: hidden;
+            border: 2px solid #ddd;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        .ride-options {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-top: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .ride-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .ride-option:last-child {
+            border-bottom: none;
+        }
+
+        .trip-history {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .trip-item {
+            padding: 20px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .trip-item:hover {
+            background: #f9f9f9;
+        }
+
+        .trip-info p:first-child {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .trip-info p:last-child {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .trip-details {
+            text-align: right;
+        }
+
+        .trip-details p:first-child {
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .trip-details p:last-child {
+            color: #1E9455;
+            font-size: 14px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #000;
+            color: #000;
+        }
+
+        .btn-outline:hover {
+            background: #f0f0f0;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #c3e6cb;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Route Info Panel */
+        .route-info {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .route-info.active {
+            display: block;
+        }
+
+        .route-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            text-align: center;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+
+        .stat-box .label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .stat-box .value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #000;
+        }
+
+        .direction-step {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            border-left: 4px solid #000;
+        }
+
+        .direction-step strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .direction-step small {
+            color: #666;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            stroke: #ddd;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .dashboard-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+            }
+
+            .booking-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .route-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav>
+            <div class="logo" onclick="window.location.href='index.html'">Yatri</div>
+            <ul class="nav-links">
+                <li><a onclick="window.location.href='index.html'">Home</a></li>
+                <li><a href="dashboardUSER.html">My Trips</a></li>
+                <li><a href="about1.html">About</a></li>
+                <li><a href="about.html">Help</a></li>
+            </ul>
+            <div class="user-profile">
+                <div class="user-avatar">JD</div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Dashboard Container -->
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <h3>Book My Trip</h3>
+            <ul class="sidebar-nav">
+                <li>
+                    <a href="#" class="active" onclick="switchDashboard('ride'); return false;">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                        </svg>
+                        <span>Book a Ride</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="switchDashboard('history'); return false;">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span>Trip History</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="switchDashboard('account'); return false;">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
+                        <span>Account Settings</span>
+                    </a>
+                </li>
+                <li style="margin-top: 30px;">
+                    <a href="#" onclick="window.location.href='index.html'; return false;" style="color: #ff6b6b;">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                        </svg>
+                        <span>Log Out</span>
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- Dashboard Content -->
+        <div class="dashboard-content">
+            <!-- Ride Booking Panel -->
+            <div id="dashboard-ride" class="dashboard-panel active">
+                <h2 class="dashboard-header">Where to?</h2>
+                
+                <div class="alert-success">
+                    <span>🗺️</span>
+                    <span><strong>Live Route Mapping Active!</strong> Enter locations to see real-time directions.</span>
+                </div>
+
+                <div class="booking-grid">
+                    <div>
+                        <div class="booking-form">
+                            <h4>Set Trip Details</h4>
+                            
+                                <!-- Pickup Location -->
+                            <div class="input-group">
+                                <input type="text" name="Pickup-Location" placeholder="Enter pickup location" id="pickup" value="Bhubaneswar, India">
+                            </div>
+
+                            <!-- Destination -->
+                            <div class="input-group">
+                                <input type="text" name="Destination" placeholder="Enter destination" id="destination" value="cuttack, India">
+                            </div>
+                            
+                            
+
+                           <!-- Ride Type Selection -->
+                            <div class="input-group">
+                              <select id="travelMode">
+                                <option id="bike" value="bike">🏍️ Bike - ₹20/km</option>
+                                <option id="auto" value="auto">🛺 Auto - ₹53/km</option>
+                                <option id="cab-economy" value="cab-economy">🚗 Cab Economy - ₹73/km</option>
+                                <option id="cab-premium" value="cab-premium">🚙 Cab Premium / Family - ₹94/km</option>
+                              </select>
+                            </div>
+
+                            
+                            <button id="getDirections" class="btn-ride">Show Route & Get Price</button>
+                        </div>
+                        
+                        <div class="booking-form" style="margin-top: 20px;">
+                            <h4>Offers on your travels</h4>
+                            <!-- Uber Offers Section -->
+<div style="padding: 10px;">
+  <h4 style="margin-bottom: 15px;">🎁 Available Offers</h4>
+
+  <!-- Offer 1 -->
+  <div style="padding: 15px; background: #f9f9f9; border-radius: 8px; cursor: pointer; margin-bottom: 10px;"
+       onmouseover="this.style.background='#f0f0f0'" 
+       onmouseout="this.style.background='#f9f9f9'">
+    <p style="font-weight: 600; margin-bottom: 5px;">🎉 Welcome Offer</p>
+    <p style="font-size: 14px; color: #666;">Get ₹50 off on your first ride!</p>
+    <button onclick="applyOffer(50)" 
+            style="margin-top: 8px; background-color: #ff4d88; color: white; border: none; border-radius: 6px; padding: 6px 12px; cursor: pointer;">
+      Apply Offer
+    </button>
+  </div>
+
+  <!-- Offer 2 -->
+  <div style="padding: 15px; background: #f9f9f9; border-radius: 8px; cursor: pointer; margin-bottom: 10px;"
+       onmouseover="this.style.background='#f0f0f0'" 
+       onmouseout="this.style.background='#f9f9f9'">
+    <p style="font-weight: 600; margin-bottom: 5px;">💸 Refer & Earn</p>
+    <p style="font-size: 14px; color: #666;">Invite friends & earn ₹100 ride credit each.</p>
+    <button onclick="applyOffer(100)" 
+            style="margin-top: 8px; background-color: #ff4d88; color: white; border: none; border-radius: 6px; padding: 6px 12px; cursor: pointer;">
+      Apply Offer
+    </button>
+  </div>
+
+  <!-- Offer 3 -->
+  <div style="padding: 15px; background: #f9f9f9; border-radius: 8px; cursor: pointer; margin-bottom: 10px;"
+       onmouseover="this.style.background='#f0f0f0'" 
+       onmouseout="this.style.background='#f9f9f9'">
+    <p style="font-weight: 600; margin-bottom: 5px;">🕐 Happy Hours</p>
+    <p style="font-size: 14px; color: #666;">Get 20% off rides between 2 PM - 5 PM.</p>
+    <button onclick="applyOffer(20, true)" 
+            style="margin-top: 8px; background-color: #ff4d88; color: white; border: none; border-radius: 6px; padding: 6px 12px; cursor: pointer;">
+      Apply Offer
+    </button>
+  </div>
+
+  <!-- Offer 4 -->
+  <div style="padding: 15px; background: #f9f9f9; border-radius: 8px; cursor: pointer;"
+       onmouseover="this.style.background='#f0f0f0'" 
+       onmouseout="this.style.background='#f9f9f9'">
+    <p style="font-weight: 600; margin-bottom: 5px;">🚘 Weekend Special</p>
+    <p style="font-size: 14px; color: #666;">Flat ₹75 off on Cab Premium rides.</p>
+    <button onclick="applyOffer(75)" 
+            style="margin-top: 8px; background-color: #ff4d88; color: white; border: none; border-radius: 6px; padding: 6px 12px; cursor: pointer;">
+      Apply Offer
+    </button>
+  </div>
+</div>
+
+<!-- Simple JS Function -->
+<script>
+  function applyOffer(value, percent = false) {
+    if (percent) {
+      alert(`🎁 ${value}% discount applied to your final price!`);
+    } else {
+      alert(`🎁 ₹${value} offer applied to your final price!`);
+    }
+  }
+</script>
+
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="map-container">
+                            <div id="map"></div>
+                        </div>
+                        
+                        <!-- Route Info Panel -->
+                        <div class="route-info" id="routeInfo">
+                            <h4 style="margin-bottom: 15px;">📋 Route Details</h4>
+                            <div class="route-stats">
+                                <div class="stat-box">
+                                    <div class="label">Distance</div>
+                                    <div class="value" id="routeDistance">--</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="label">Duration</div>
+                                    <div class="value" id="routeDuration">--</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="label">Est. Fare</div>
+                                    <div class="value" id="routeFare">--</div>
+                                </div>
+                            </div>
+                            
+                            <button class="btn-ride" onclick="confirmRide()">Confirm & Book Ride</button>
+                        </div>
+                        <!-- Available Ride Options -->
+                        <div class="ride-options">
+  <h4 style="margin-bottom: 15px;">Available Ride Options</h4>
+
+  <div class="ride-option">
+    <div>
+      <span style="font-weight: 600;">🏍️ Bike</span>
+      <p style="font-size: 12px; color: #666; margin-top: 3px;">Fast and affordable solo ride</p>
+    </div>
+    <span style="font-weight: 700;" id="bike-price">₹20 / km</span>
+  </div>
+
+  <div class="ride-option">
+    <div>
+      <span style="font-weight: 600;">🛺 Auto</span>
+      <p style="font-size: 12px; color: #666; margin-top: 3px;">Quick local rides at low cost</p>
+    </div>
+    <span style="font-weight: 700;" id="auto-price">₹53 / km</span>
+  </div>
+
+  <div class="ride-option">
+    <div>
+      <span style="font-weight: 600;">🚗 Cab Economy</span>
+      <p style="font-size: 12px; color: #666; margin-top: 3px;">Comfortable rides for daily use</p>
+    </div>
+    <span style="font-weight: 700;" id="economy-price">₹73 / km</span>
+  </div>
+
+  <div class="ride-option">
+    <div>
+      <span style="font-weight: 600;">🚙 Cab Premium / Family</span>
+      <p style="font-size: 12px; color: #666; margin-top: 3px;">Spacious and luxury family rides</p>
+    </div>
+    <span style="font-weight: 700;" id="premium-price">₹94 / km</span>
+  </div>
+</div>
+
+                    </div>
+                </div>
+            </div>
+
+           
+            <!-- Trip History Panel -->
+            <div id="dashboard-history" class="dashboard-panel">
+                <h2 class="dashboard-header">Your Recent Trips</h2>
+                <div class="trip-history" id="tripHistoryContainer">
+                    <!-- Empty state will show initially -->
+                    <div class="empty-state" id="emptyState">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        <h3 style="margin-bottom: 10px; color: #666;">No trips yet</h3>
+                        <p>Book your first ride to see trip history here</p>
+                    </div>
+                </div>
+                <button class="btn btn-outline" style="margin-top: 20px;" onclick="clearTripHistory()">Clear All History</button>
+            </div>
+
+            <!-- Account Settings Panel -->
+            <div id="dashboard-account" class="dashboard-panel">
+                <h2 class="dashboard-header">Account & Payment Settings</h2>
+                
+                <div class="booking-form" style="margin-bottom: 30px;">
+                    <h4>Profile Information</h4>
+                    <p style="margin-bottom: 10px;"><strong>Name:</strong> Jane Doe</p>
+                    <p style="margin-bottom: 10px;"><strong>Email:</strong> jane.doe@example.com</p>
+                    <p style="margin-bottom: 10px;"><strong>Phone:</strong> (555) 123-4567</p>
+                    <button class="btn btn-outline" style="margin-top: 15px;">Edit Profile</button>
+                </div>
+
+                <div class="booking-form">
+                    <h4>Payment Methods</h4>
+                    <div style="padding: 15px 0; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight: 600;">Visa ending in 4242</span>
+                        <span style="color: #1E9455; font-weight: 600; font-size: 14px;">Default</span>
+                    </div>
+                    <div style="padding: 15px 0; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight: 600;">PayPal (jane.d@)</span>
+                        <a href="#" style="color: #000; font-size: 14px; text-decoration: none;">Set as Default</a>
+                    </div>
+                    <button class="btn-ride" style="margin-top: 20px;">Add New Payment</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- AI BOT -->
+    <script src='https://www.noupe.com/embed/019a05589bc779c6a7cd8779cf85de5f29d5.js'></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Map Variables
+        let map;
+        let routeLayer;
+        let markers = [];
+
+        // Initialize Map
+        function initMap() {
+            map = L.map('map').setView([19.0760, 72.8777], 12); // Mumbai center
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+            
+            console.log('✅ Map initialized successfully!');
+        }
+
+        // Get Coordinates
+        async function getCoordinates(location) {
+            const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}`;
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            if (data.length > 0) {
+                return {
+                    lat: parseFloat(data[0].lat),
+                    lon: parseFloat(data[0].lon),
+                    display_name: data[0].display_name
+                };
+            }
+            return null;
+        }
+
+        // Get Route
+        async function getRoute(start, end, mode = 'driving') {
+            const url = `https://router.project-osrm.org/route/v1/${mode}/${start.lon},${start.lat};${end.lon},${end.lat}?overview=full&geometries=geojson&steps=true`;
+            const response = await fetch(url);
+            return await response.json();
+        }
+
+        // Calculate Route
+        async function calculateRoute() {
+            const pickup = document.getElementById('pickup').value.trim();
+            const destination = document.getElementById('destination').value.trim();
+            const mode = document.getElementById('travelMode').value;
+            
+            if (!pickup || !destination) {
+                alert('⚠️ Please enter both pickup and destination!');
+                return;
+            }
+            
+            const button = document.getElementById('getDirections');
+            button.textContent = '⏳ Calculating route...';
+            button.disabled = true;
+            
+            try {
+                console.log('Finding locations...');
+                const startCoords = await getCoordinates(pickup);
+                const endCoords = await getCoordinates(destination);
+                
+                if (!startCoords || !endCoords) {
+                    alert('❌ Could not find locations! Try being more specific.');
+                    button.textContent = 'Show Route & Get Price';
+                    button.disabled = false;
+                    return;
+                }
+                
+                console.log('Calculating route...');
+                const routeData = await getRoute(startCoords, endCoords, mode);
+                
+                if (routeData.code !== 'Ok') {
+                    alert('❌ Could not calculate route!');
+                    button.textContent = 'Show Route & Get Price';
+                    button.disabled = false;
+                    return;
+                }
+                
+                // Clear previous route
+                if (routeLayer) map.removeLayer(routeLayer);
+                markers.forEach(marker => map.removeLayer(marker));
+                markers = [];
+                
+                // Draw route
+                const coordinates = routeData.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
+                routeLayer = L.polyline(coordinates, {
+                    color: '#000',
+                    weight: 5,
+                    opacity: 0.7
+                }).addTo(map);
+                
+                // Add markers
+                const startIcon = L.divIcon({
+                    className: 'custom-marker',
+                    html: '<div style="background: #000; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">A</div>',
+                    iconSize: [30, 30]
+                });
+                
+                const endIcon = L.divIcon({
+                    className: 'custom-marker',
+                    html: '<div style="background: #1E9455; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">B</div>',
+                    iconSize: [30, 30]
+                });
+                
+                const startMarker = L.marker([startCoords.lat, startCoords.lon], {icon: startIcon})
+                    .addTo(map)
+                    .bindPopup(`<b>🚩 Pickup</b><br>${pickup}`);
+                
+                const endMarker = L.marker([endCoords.lat, endCoords.lon], {icon: endIcon})
+                    .addTo(map)
+                    .bindPopup(`<b>🏁 Destination</b><br>${destination}`);
+                
+                markers.push(startMarker, endMarker);
+                
+                // Fit map to route
+                map.fitBounds(routeLayer.getBounds(), { padding: [50, 50] });
+                
+                // Update route info
+                const route = routeData.routes[0];
+                const distanceKm = (route.distance / 1000).toFixed(1);
+                const durationMin = Math.round(route.duration / 60);
+                const hours = Math.floor(durationMin / 60);
+                const mins = durationMin % 60;
+                const durationText = hours > 0 ? `${hours}h ${mins}m` : `${mins} min`;
+                
+                document.getElementById('routeDistance').textContent = distanceKm + ' km';
+                document.getElementById('routeDuration').textContent = durationText;
+                
+                // Calculate fares based on selected travel mode
+                const selectedMode = document.getElementById('travelMode').value;
+                const ratePerKm = {
+                    'bike': 20,
+                    'auto': 53,
+                    'cab-economy': 73,
+                    'cab-premium': 94
+                };
+                const fare = (ratePerKm[selectedMode] * parseFloat(distanceKm)).toFixed(2);
+                document.getElementById('routeFare').textContent = '₹' + fare;
+                
+                // Show route info
+                document.getElementById('routeInfo').classList.add('active');
+                
+                button.textContent = 'Show Route & Get Price';
+                button.disabled = false;
+                
+                console.log('✅ Route calculated successfully!');
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ An error occurred: ' + error.message);
+                button.textContent = 'Show Route & Get Price';
+                button.disabled = false;
+            }
+        }
+
+        // Trip History Management
+        function loadTripHistory() {
+            const trips = JSON.parse(localStorage.getItem('tripHistory') || '[]');
+            const container = document.getElementById('tripHistoryContainer');
+            const emptyState = document.getElementById('emptyState');
+            
+            if (trips.length === 0) {
+                emptyState.style.display = 'block';
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            container.innerHTML = trips.map((trip, index) => `
+                <div class="trip-item">
+                    <div class="trip-info">
+                        <p>${trip.pickup} → ${trip.destination}</p>
+                        <p>${trip.date} • ${trip.distance} • ${trip.duration}</p>
+                    </div>
+                    <div class="trip-details">
+                        <p>₹${trip.fare}</p>
+                        <p>✓ Completed</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function saveTrip(tripData) {
+            const trips = JSON.parse(localStorage.getItem('tripHistory') || '[]');
+            trips.unshift(tripData); // Add to beginning
+            if (trips.length > 20) trips.pop(); // Keep only last 20 trips
+            localStorage.setItem('tripHistory', JSON.stringify(trips));
+        }
+        
+        function clearTripHistory() {
+            if (confirm('Are you sure you want to clear all trip history?')) {
+                localStorage.removeItem('tripHistory');
+                loadTripHistory();
+                alert('✓ Trip history cleared!');
+            }
+        }
+
+        // Confirm Ride
+        function confirmRide() {
+            const pickup = document.getElementById('pickup').value;
+            const destination = document.getElementById('destination').value;
+            const distance = document.getElementById('routeDistance').textContent;
+            const duration = document.getElementById('routeDuration').textContent;
+            const fare = document.getElementById('routeFare').textContent.replace('₹', '');
+            
+            // Save trip to history
+            const tripData = {
+                pickup: pickup,
+                destination: destination,
+                distance: distance,
+                duration: duration,
+                fare: fare,
+                date: new Date().toLocaleDateString('en-IN', { 
+                    day: 'numeric', 
+                    month: 'short', 
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                }),
+                mode: document.getElementById('travelMode').options[document.getElementById('travelMode').selectedIndex].text
+            };
+            
+            saveTrip(tripData);
+            
+            alert(`🎉 Ride Confirmed!\n\nFrom: ${pickup}\nTo: ${destination}\n\nYour driver will arrive in 5 minutes!`);
+            
+            // Reload trip history if on that panel
+            loadTripHistory();
+        }
+
+        // Dashboard Panel Switching
+        function switchDashboard(panelName) {
+            const panels = document.querySelectorAll('.dashboard-panel');
+            const navLinks = document.querySelectorAll('.sidebar-nav a');
+            
+            panels.forEach(panel => panel.classList.remove('active'));
+            navLinks.forEach(link => link.classList.remove('active'));
+            
+            document.getElementById('dashboard-' + panelName).classList.add('active');
+            event.target.closest('a').classList.add('active');
+            
+            // Load trip history when switching to history panel
+            if (panelName === 'history') {
+                loadTripHistory();
+            }
+        }
+
+        // Initialize on load
+        window.addEventListener('load', initMap);
+        
+        // Event listeners
+        document.getElementById('getDirections').addEventListener('click', calculateRoute);
+        
+        document.getElementById('pickup').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') calculateRoute();
+        });
+        
+        document.getElementById('destination').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') calculateRoute();
+        });
+    </script>
+</body>
+</html>

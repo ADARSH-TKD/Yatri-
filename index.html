@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uber Clone | Get a ride, drive, or deliver</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background-color: #fff;
+            color: #000;
+        }
+
+        /* Header */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #000;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .nav-links a:hover {
+            color: #666;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-signin {
+            background: transparent;
+            color: #000;
+        }
+
+        .btn-signin:hover {
+            background: #f6f6f6;
+        }
+
+        .btn-signup {
+            background: #000;
+            color: #fff;
+        }
+
+        .btn-signup:hover {
+            background: #333;
+        }
+
+        /* Hero Section with Map and Particles */
+        .hero-section {
+            position: relative;
+            height: 80vh;
+            overflow: hidden;
+        }
+
+        #map {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        #map iframe {
+            width: 100%;
+            height: 100%;
+            border: 0;
+            filter: grayscale(20%) brightness(0.7);
+        }
+
+        #particles-js {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 3;
+        }
+
+        .hero-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 4;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .ride-card {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #e5e5e5;
+            margin-bottom: 25px;
+        }
+
+        .tab-btn {
+            padding: 15px 30px;
+            background: transparent;
+            border: none;
+            border-bottom: 4px solid transparent;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            border-bottom-color: #000;
+            color: #000;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .ride-card h1 {
+            font-size: 36px;
+            margin-bottom: 25px;
+            line-height: 1.2;
+        }
+
+        .ride-card p {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .ride-card input {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .ride-card input:focus {
+            outline: none;
+            border-color: #000;
+            box-shadow: 0 0 0 2px rgba(0,0,0,0.1);
+        }
+
+        .btn-ride {
+            width: 100%;
+            padding: 15px;
+            background: #000;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn-ride:hover {
+            background: #333;
+        }
+
+        .btn-green {
+            background: #1E9455;
+        }
+
+        .btn-green:hover {
+            background: #17753f;
+        }
+
+        .link-text {
+            display: block;
+            margin-top: 15px;
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .link-text:hover {
+            color: #000;
+        }
+
+        /* Services Section */
+        .services {
+            max-width: 1200px;
+            margin: 80px auto;
+            padding: 0 40px;
+        }
+
+        .services h2 {
+            font-size: 36px;
+            margin-bottom: 40px;
+        }
+
+        .service-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .service-card {
+            background: #f6f6f6;
+            padding: 30px;
+            border-radius: 12px;
+            transition: transform 0.3s;
+        }
+
+        .service-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .service-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            background: #ddd;
+        }
+
+        .service-card h3 {
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        .service-card p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .service-card a {
+            color: #000;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .service-card a:hover {
+            text-decoration: underline;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            background: #f6f6f6;
+            padding: 80px 40px;
+            text-align: center;
+        }
+
+        .cta-section h2 {
+            font-size: 48px;
+            margin-bottom: 30px;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .btn-large {
+            padding: 15px 40px;
+            font-size: 18px;
+            border-radius: 30px;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #000;
+            color: #000;
+        }
+
+        .btn-outline:hover {
+            background: #f0f0f0;
+        }
+
+        /* Footer */
+        footer {
+            background: #000;
+            color: white;
+            padding: 60px 40px 30px;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-logo {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 40px;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            padding-bottom: 40px;
+            border-bottom: 1px solid #333;
+        }
+
+        .footer-column h4 {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        .footer-column ul {
+            list-style: none;
+        }
+
+        .footer-column li {
+            margin-bottom: 10px;
+        }
+
+        .footer-column a {
+            color: #999;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .footer-column a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+            color: #999;
+            font-size: 14px;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero-section {
+                height: 90vh;
+            }
+
+            .ride-card {
+                padding: 30px 20px;
+            }
+
+            .ride-card h1 {
+                font-size: 28px;
+            }
+
+            .services {
+                padding: 40px 20px;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav>
+            <div class="logo">Yatri</div>
+            <ul class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="dashboardUSER.html">My Trips</a>
+                <a href="about1.html">About</a>
+                <a href="about.html">Help</a>
+            </ul>
+            <div class="auth-buttons">
+                <button class="btn btn-signin" onclick="window.location.href='signin.html'">Sign in</button>
+                <button class="btn btn-signup" onclick="window.location.href='signupUSER.html'">Sign up</button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <div id="map">
+                <iframe 
+                    src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d56392.95080748231!2d85.77038015087264!3d20.211928194485125!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e1!3m2!1sen!2sin!4v1761288865955!5m2!1sen!2sin" 
+                    allowfullscreen="" 
+                    loading="lazy">
+                </iframe>
+            </div>
+            <div id="particles-js"></div>
+            <div class="hero-overlay"></div>
+            
+            <div class="hero-content">
+                <div class="ride-card">
+                    <div class="tabs">
+                        <button class="tab-btn active" onclick="switchTab('ride')">Ride</button>
+                        <button class="tab-btn" onclick="switchTab('drive')">Drive</button>
+                    </div>
+                    
+                    <div id="tab-ride" class="tab-content active">
+                        <h1>Get there. Your day belongs to you.</h1>
+                        <div class="input-group">
+                            <input type="text" placeholder="Enter pickup location">
+                        </div>
+                        <div class="input-group">
+                            <input type="text" placeholder="Enter destination">
+                        </div>
+                        <button class="btn-ride" onclick="window.location.href='signin.html'">See prices</button>
+                        <a href="signup.html" class="link-text">Create an account to continue →</a>
+                    </div>
+
+                    <div id="tab-drive" class="tab-content">
+                        <h1>Earn at your own pace.</h1>
+                        <p>Make money when you want, and keep your schedule flexible.</p>
+                        <button class="btn-ride btn-green">Sign up to drive</button>
+                        <a href="signin.html" class="link-text">Already have an account? Sign in here</a>
+                        <a href="signupUSER.html" class="link-text">Create an account to continue →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Services Section -->
+            <div class="services">
+    <h2>Your Next Journey Starts Now</h2>
+    <div class="service-grid">
+      <div class="service-card">
+        <img src="rider.jpg"Request a ride - Yellow Cab" />
+        <h3>Request a ride</h3>
+        <p>Tap and go. The easiest way to get where you're going.</p>
+        <a href="#">Learn more &rarr;</a>
+      </div>
+      <div class="service-card">
+        <img src="driver.jpg" alt="Drive or Deliver" style="height:200px; width:100%; object-fit:cover; border-radius:8px; background:#ddd;"/>
+        <h3>Drive or deliver</h3>
+        <p>Start earning money on your schedule, in your own time.</p>
+        <a href="#">Get started &rarr;</a>
+      </div>
+    </div>
+  </div>
+
+        <!-- CTA Section -->
+        <div class="cta-section">
+            <h2>Ready to ride or ready to earn?</h2>
+            <div class="cta-buttons">
+                <button class="btn btn-signup btn-large">Sign Up Now</button>
+                <button class="btn btn-outline btn-large">Sign In</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-logo">Uber</div>
+            
+            <div class="footer-grid">
+                <div class="footer-column">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="#">About us</a></li>
+                        <li><a href="#">Our offerings</a></li>
+                        <li><a href="#">Newsroom</a></li>
+                        <li><a href="#">Investors</a></li>
+                        <li><a href="#">Blog</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h4>Products</h4>
+                    <ul>
+                        <li><a href="#">Ride</a></li>
+                        <li><a href="#">Drive</a></li>
+                        <li><a href="#">Uber Eats</a></li>
+                        <li><a href="#">Uber Freight</a></li>
+                        <li><a href="#">Venture</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h4>Global Citizenship</h4>
+                    <ul>
+                        <li><a href="#">Safety</a></li>
+                        <li><a href="#">Diversity</a></li>
+                        <li><a href="#">Sustainability</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h4>Travel</h4>
+                    <ul>
+                        <li><a href="#">Airports</a></li>
+                        <li><a href="#">Cities</a></li>
+                        <li><a href="#">Help Center</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div>© 2025 Uber Technologies Inc.</div>
+                <div class="footer-links">
+                    <a href="#">Privacy</a>
+                    <a href="#">Terms</a>
+                    <a href="#">Sitemap</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- AI BOT -->
+    <script src='https://www.noupe.com/embed/019a05589bc779c6a7cd8779cf85de5f29d5.js'></script>
+    
+    <!-- Particles.js Library -->
+    <script src="particles.js"></script>
+    
+    <!-- JavaScript -->
+    <script>
+        // Initialize Particles.js
+        particlesJS('particles-js', {
+            "particles": {
+                "number": {
+                    "value": 120,
+                    "density": {
+                        "enable": true,
+                        "value_area": 800
+                    }
+                },
+                "color": {
+                    "value": "#ffffff"
+                },
+                "shape": {
+                    "type": ["circle", "triangle", "edge"],
+                    "stroke": {
+                        "width": 0,
+                        "color": "#000000"
+                    },
+                    "polygon": {
+                        "nb_sides": 5
+                    }
+                },
+                "opacity": {
+                    "value": 0.7,
+                    "random": true,
+                    "anim": {
+                        "enable": true,
+                        "speed": 1.5,
+                        "opacity_min": 0.1,
+                        "sync": false
+                    }
+                },
+                "size": {
+                    "value": 4,
+                    "random": true,
+                    "anim": {
+                        "enable": true,
+                        "speed": 5,
+                        "size_min": 0.5,
+                        "sync": false
+                    }
+                },
+                "line_linked": {
+                    "enable": true,
+                    "distance": 150,
+                    "color": "#ffffff",
+                    "opacity": 0.7,
+                    "width": 2
+                },
+                "move": {
+                    "enable": true,
+                    "speed": 4,
+                    "direction": "none",
+                    "random": true,
+                    "straight": false,
+                    "out_mode": "out",
+                    "bounce": true,
+                    "attract": {
+                        "enable": true,
+                        "rotateX": 800,
+                        "rotateY": 1600
+                    }
+                }
+            },
+            "interactivity": {
+                "detect_on": "canvas",
+                "events": {
+                    "onhover": {
+                        "enable": true,
+                        "mode": ["grab", "bubble"]
+                    },
+                    "onclick": {
+                        "enable": true,
+                        "mode": ["push", "repulse"]
+                    },
+                    "resize": true
+                },
+                "modes": {
+                    "grab": {
+                        "distance": 250,
+                        "line_linked": {
+                            "opacity": 1
+                        }
+                    },
+                    "bubble": {
+                        "distance": 300,
+                        "size": 10,
+                        "duration": 2,
+                        "opacity": 0.9,
+                        "speed": 3
+                    },
+                    "repulse": {
+                        "distance": 200,
+                        "duration": 0.4
+                    },
+                    "push": {
+                        "particles_nb": 8
+                    },
+                    "remove": {
+                        "particles_nb": 3
+                    }
+                }
+            },
+            "retina_detect": true
+        });
+
+        // Tab Switching Function
+        function switchTab(tabName) {
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById('tab-' + tabName).classList.add('active');
+        }
+    </script>
+</body>
+</html>
